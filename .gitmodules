@@ -1,0 +1,6 @@
+[submodule "llvm-project"]
+	path = tools/llvm-project
+	url = git@github.com:llvm/llvm-project.git
+[submodule "include-what-you-use"]
+	path = tools/include-what-you-use
+	url = git@github.com:include-what-you-use/include-what-you-use.git
