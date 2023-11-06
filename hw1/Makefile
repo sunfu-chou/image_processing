@@ -50,6 +50,29 @@ run: all
 	$(OUT_DIR)/$(TARGET3) input/input2.bmp output/output2/extra/3-down-crop.bmp 1.5 0 1
 	$(OUT_DIR)/$(TARGET3) input/input2.bmp output/output2/3-up.bmp 1.5 1 0
 	$(OUT_DIR)/$(TARGET3) input/input2.bmp output/output2/extra/3-up-crop.bmp 1.5 1 1
+
+		$(OUT_DIR)/$(TARGET1) input/test1.bmp output/test1/1-flipped.bmp
+
+	$(OUT_DIR)/$(TARGET1) input/test2.bmp output/test2/1-flipped.bmp
+
+	$(OUT_DIR)/$(TARGET2) input/test2.bmp output/test2/2-2bit.bmp 2
+	$(OUT_DIR)/$(TARGET2) input/test2.bmp output/test2/2-4bit.bmp 4
+	$(OUT_DIR)/$(TARGET2) input/test2.bmp output/test2/2-6bit.bmp 6
+
+	$(OUT_DIR)/$(TARGET2) input/test1.bmp output/test1/2-2bit.bmp 2
+	$(OUT_DIR)/$(TARGET2) input/test1.bmp output/test1/2-4bit.bmp 4
+	$(OUT_DIR)/$(TARGET2) input/test1.bmp output/test1/2-6bit.bmp 6
+
+	$(OUT_DIR)/$(TARGET3) input/test1.bmp output/test1/3-down.bmp 1.5 0 0
+	$(OUT_DIR)/$(TARGET3) input/test1.bmp output/test1/extra/3-down-crop.bmp 1.5 0 1
+	$(OUT_DIR)/$(TARGET3) input/test1.bmp output/test1/3-up.bmp 1.5 1 0
+	$(OUT_DIR)/$(TARGET3) input/test1.bmp output/test1/extra/3-up-crop.bmp 1.5 1 1
+
+	$(OUT_DIR)/$(TARGET3) input/test2.bmp output/test2/3-down.bmp 1.5 0 0
+	$(OUT_DIR)/$(TARGET3) input/test2.bmp output/test2/extra/3-down-crop.bmp 1.5 0 1
+	$(OUT_DIR)/$(TARGET3) input/test2.bmp output/test2/3-up.bmp 1.5 1 0
+	$(OUT_DIR)/$(TARGET3) input/test2.bmp output/test2/extra/3-up-crop.bmp 1.5 1 1
+
 	tree output
 
 .PHONY: clean
@@ -65,3 +88,6 @@ iwyu:
 	$(IWYU) $(SRC_DIR)/hw1-1.cpp
 	$(IWYU) $(SRC_DIR)/hw1-2.cpp
 	$(IWYU) $(SRC_DIR)/hw1-3.cpp
+	
+docs:
+	@doxygen

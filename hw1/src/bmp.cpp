@@ -1,3 +1,16 @@
+/**
+ * @file bmp.cpp
+ * @author sunfu-chou (sunfu-chou@gmail.com)
+ * @brief This file contains the declarations of the BMPFileHeader, BMPInfoHeader, Pixel, and BMPImage classes.
+ * The BMPFileHeader and BMPInfoHeader classes represent the file and information headers of a BMP image, respectively.
+ * The Pixel class represents a single pixel in a BMP image, and the BMPImage class represents the entire BMP image.
+ * This file provides the necessary functionality to read and write BMP images, as well as manipulate individual pixels.
+ * @version 0.1
+ * @date 2023-10-18
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #include "bmp.h"
 #include <algorithm>
 #include <fstream>
@@ -59,7 +72,6 @@ void BMPImage::read(const std::string& filename)
 
 void BMPImage::write(const std::string& filename)
 {
-    
 #ifdef __cplusplus
 #if __cplusplus >= 201703L  // Check for C++17 or later
     std::filesystem::path filePath(filename);

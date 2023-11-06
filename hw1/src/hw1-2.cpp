@@ -1,3 +1,13 @@
+/**
+ * @file hw1-2.cpp
+ * @author sunfu-chou (sunfu-chou@gmail.com)
+ * @brief This hw1-2
+ * @version 0.1
+ * @date 2023-10-18
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #include <iostream>
 #include <stdexcept>
 #include <string>
