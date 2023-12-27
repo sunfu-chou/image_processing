@@ -7,3 +7,6 @@
 [submodule "tools/opencv"]
 	path = tools/opencv
 	url = git@github.com:opencv/opencv.git
+[submodule "tools/segment-anything"]
+	path = tools/segment-anything
+	url = git@github.com:facebookresearch/segment-anything.git

@@ -1,3 +1,6 @@
 .vscode
 */bin
 doc
+*.pth
+__pycache__
+events.out.tfevents.*
