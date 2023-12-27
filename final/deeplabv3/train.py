@@ -1,22 +1,21 @@
 import numpy as np
 import torch
 from PIL import Image
-from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms import v2 as transforms
 from tqdm import tqdm
 
 
-def train(model, dataloaders, tb_writer, args, device, epoch, lr):
+def train(model, dataloaders, tb_writer, args):
     critierion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
-    for epoch in tqdm(range(epoch)):
+    for epoch in tqdm(range(args.epochs)):
         pbar = tqdm(enumerate(dataloaders), total=len(dataloaders), leave=False)
         total_loss = 0
         model.train()
         for i, (images, masks) in pbar:
-            images = images.to(device)
-            masks = masks.to(device).squeeze(1).long()
+            images = images.to(args.device)
+            masks = masks.to(args.device).squeeze(1).long()
             optimizer.zero_grad()
             with torch.set_grad_enabled(True):
                 output = model(images)
@@ -24,9 +23,11 @@ def train(model, dataloaders, tb_writer, args, device, epoch, lr):
                 loss.backward()
                 optimizer.step()
 
-            pbar.set_postfix_str(f"Epoch: {epoch}, Batch: {i}, Loss: {loss.item()}")
+            # pbar.set_postfix_str(f"Epoch: {epoch}, Batch: {i}, Loss: {loss.item()}")
 
             total_loss += loss.item()
+        if epoch % args.save_every_epoch == 0:
+            torch.save(model.state_dict(), args.run_root / f"{args.model}_{epoch}.pth")
         model.eval()
         image_name = "/home/user/image_processing/final/training_dataset/image/1.jpg"
         with open(image_name, "rb") as image_file:
@@ -39,9 +40,7 @@ def train(model, dataloaders, tb_writer, args, device, epoch, lr):
                     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
                 ]
             )
-            image = data_transforms(image)
-            image = image.unsqueeze(0)
-            image = image.to(device)
+            image = data_transforms(image).unsqueeze(0).to(args.device)
             output = model(image)
         output_mask = output["out"].detach().cpu().numpy()[0] * 255
         output_mask = output_mask.transpose((1, 2, 0))

@@ -1,62 +1,76 @@
+import argparse
+import os
+import pathlib
+from pathlib import Path
+
 import torch
 from eval import eval, write_mask
 from load_model import load_model
-from train import train
+from torch.utils.tensorboard import SummaryWriter
+from final.deeplabv3.train import train
 
 from final.dataloader import get_water_dataloader
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-model = load_model("resnet50")
-model.train()
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--run_name", type=str, default="deeplabv3-test")
+    parser.add_argument("--train", action="store_true")
+    parser.add_argument("--eval", action="store_true")
+    parser.add_argument("--data_root", type=str, default="/home/user/image_processing/final/training_dataset")
+    parser.add_argument("--image_folder", type=str, default="image")
+    parser.add_argument("--mask_folder", type=str, default="mask")
+    parser.add_argument("--root", type=str, default=os.path.join(Path(__file__).parent.absolute()))
+    parser.add_argument("--cpu", action="store_true")
+    parser.add_argument("--model", type=str, default="resnet50")
+    parser.add_argument("--save_every_epoch", default=50, type=int, help="save every epoch")
 
-dataloaders = get_water_dataloader("/home/user/image_processing/final/training_dataset", batch_size=10)
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--batch_size", type=int, default=10)
+    parser.add_argument("--lr", type=float, default=0.001)
 
-model.to(device)
+    return parser.parse_args()
 
-# train(model, dataloaders, device, 300)
-# exit()
 
-model.load_state_dict(torch.load("final/deeplabv3/resnet50.pth"))
-model.to(device)
-model.eval()
+def main():
+    args = parse_args()
+    # for arg in args.__dict__:
+    # print(f"{arg}, {getattr(args, arg)}")
+    print(f"Run name: {args.run_name}")
 
-# import numpy as np
-# from PIL import Image
-# from torchvision.transforms import v2 as transforms
+    mode = "train"
+    mode = "eval" if args.eval else mode
 
-# image_name = "/home/user/image_processing/final/training_dataset/image/1.jpg"
-# with open(image_name, "rb") as image_file:
-#     image = Image.open(image_file).convert("RGB")
-#     data_transforms = transforms.Compose(
-#             [
-#                 transforms.ToImage(),
-#                 transforms.Resize((520, 520), antialias=True),
-#                 transforms.ToDtype(torch.float32, scale=True),
-#                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-#             ]
-#         )
-#     image = data_transforms(image)
-#     image = image.unsqueeze(0)
-#     image = image.to(device)
-#     output = model(image)['out'].cpu().detach().numpy()[0]*255
-#     print(f"Input shape: {image.shape}")
-#     print(f"Output shape: {output.shape}")
-#     print(f"Output min: {output.min()}")
-#     print(f"Output max: {output.max()}")
-#     output = output.transpose((1, 2, 0))  # Reshape to have a third dimension of size 3 or 4
-#     if output.shape[2] == 1:
-#         output = np.repeat(output, 3, axis=2)  # Repeat the single channel to create 3 channels
-#     # Save the output mask as an image
-#     output_mask = Image.fromarray(output.astype('uint8')).convert('L')  # Convert to RGB mode
-#     output_mask.save("final/deeplabv3/output_mask.jpg")
+    print(f"Mode: {mode}")
+    if not args.cpu and torch.cuda.is_available():
+        device = torch.device("cuda")
+        print("Using GPU")
+    else:
+        device = torch.device("cpu")
+        print("Using CPU")
+    args.device = device
 
-import numpy as np
-from PIL import Image
+    # Check if data_root exists
+    run_root = Path(args.root) / "runs" / args.run_name
+    args.run_root = run_root
+    if not os.path.exists(run_root):
+        os.makedirs(run_root)
+        print(f"Created run root {run_root}")
+    else:
+        print(f"Run root {run_root} already exists")
 
-for i in range(60):
-    image_path = f"/home/user/image_processing/final/training_dataset/image/{i+1}.jpg"
-    mask_path = f"/home/user/image_processing/final/training_dataset/mask/{i+1}.jpg"
-    output_mask, mask = eval(model, image_path, mask_path, device)
+    model = load_model(args.model)
+    print(f"Model: {args.model}")
+    if mode == "train":
+        model.train()
+        model.to(device)
+        dataloader = get_water_dataloader(args.data_root, args.image_folder, args.mask_folder, args.batch_size)
+        print(f"{len(dataloader.dataset)} training images loaded.")
+        tb_writer = SummaryWriter(log_dir=run_root)
+        train(model, dataloader, tb_writer, args)
+    else:
+        model.eval()
 
-    write_mask(output_mask, f"final/deeplabv3/output/{i+1}.jpg")
+
+if __name__ == "__main__":
+    main()

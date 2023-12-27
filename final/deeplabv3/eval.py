@@ -4,23 +4,17 @@ from PIL import Image
 from torchvision.transforms import v2 as transforms
 
 
-def eval(model, image_path, mask_path, device):
-    model.eval()
+def preprocess_rgb(image_path, transform):
     with open(image_path, "rb") as image_file:
         image = Image.open(image_file).convert("RGB")
-        image_size = image.size
-        data_transforms = transforms.Compose(
-            [
-                transforms.ToImage(),
-                transforms.Resize((520, 520), antialias=True),
-                transforms.ToDtype(torch.float32, scale=True),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ]
-        )
-        image = data_transforms(image)
+        image = transform(image)
         image = image.unsqueeze(0)
-        image = image.to(device)
-        output = model(image)
+    return image
+
+def eval(model, image_path, mask_path, device):
+    model.eval()
+    image = preprocess_rgb(image_path, transform).to(device)
+    output = model(image)
     output_mask = output["out"].detach().cpu().numpy()[0]
     data_transforms = transforms.Compose(
         [
