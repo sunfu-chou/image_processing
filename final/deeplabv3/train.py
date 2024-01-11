@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from PIL import Image
 from torchvision.transforms import v2 as transforms
@@ -22,8 +21,6 @@ def train(model, dataloaders, tb_writer, args):
                 loss = critierion(output["out"], masks)
                 loss.backward()
                 optimizer.step()
-
-            # pbar.set_postfix_str(f"Epoch: {epoch}, Batch: {i}, Loss: {loss.item()}")
 
             total_loss += loss.item()
         if epoch % args.save_every_epoch == 0:
