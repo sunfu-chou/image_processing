@@ -4,12 +4,12 @@ import pathlib
 from pathlib import Path
 
 import torch
-from eval import eval, write_mask
+from eval import eval_all
 from load_model import load_model
 from torch.utils.tensorboard import SummaryWriter
-from final.deeplabv3.train import train
 
 from final.dataloader import get_water_dataloader
+from final.deeplabv3.train import train
 
 
 def parse_args():
@@ -17,6 +17,11 @@ def parse_args():
     parser.add_argument("--run_name", type=str, default="deeplabv3-test")
     parser.add_argument("--train", action="store_true")
     parser.add_argument("--eval", action="store_true")
+    parser.add_argument(
+        "--eval_model_path",
+        type=str,
+        default="/home/user/image_processing/final/deeplabv3/runs/12270757/resnet50_1950.pth",
+    )
     parser.add_argument("--data_root", type=str, default="/home/user/image_processing/final/training_dataset")
     parser.add_argument("--image_folder", type=str, default="image")
     parser.add_argument("--mask_folder", type=str, default="mask")
@@ -69,7 +74,14 @@ def main():
         tb_writer = SummaryWriter(log_dir=run_root)
         train(model, dataloader, tb_writer, args)
     else:
+        print(f"Loading model from {args.eval_model_path}")
+        model.load_state_dict(torch.load(args.eval_model_path))
+        print(f"Model loaded")
         model.eval()
+        model.to(device)
+        image_folder = os.path.join(args.data_root, args.image_folder)
+        mask_folder = os.path.join(args.data_root, args.mask_folder)
+        eval_all(model, image_folder, mask_folder, device)
 
 
 if __name__ == "__main__":
